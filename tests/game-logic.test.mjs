@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applyMove, countPieces, createInitialBoard, getValidMoves } from "../app/gameLogic.ts";
+import { applyMove, countPieces, createInitialBoard, getValidMoves } from "../src/gameLogic.ts";
+import {
+  createRoomState,
+  decodeBoard,
+  joinRoomState,
+  playRoomMove,
+  resetRoom,
+  resolveSide,
+} from "../src/multiplayerGame.ts";
 
 test("starts with four pieces and four legal moves for black", () => {
   const board = createInitialBoard();
@@ -32,4 +40,49 @@ test("returns no moves when the board is full", () => {
   const board = Array.from({ length: 8 }, () => Array(8).fill("black"));
   assert.equal(getValidMoves(board, "black").length, 0);
   assert.equal(getValidMoves(board, "white").length, 0);
+});
+
+test("assigns the creator to black and the invitee to white", () => {
+  const waitingRoom = createRoomState("addu-device", 1);
+  assert.equal(waitingRoom.status, "waiting");
+  assert.equal(resolveSide(waitingRoom, "addu-device"), "black");
+
+  const joinedRoom = joinRoomState(waitingRoom, "chellun-device", 2);
+  assert.ok(joinedRoom);
+  assert.equal(joinedRoom.status, "playing");
+  assert.equal(resolveSide(joinedRoom, "chellun-device"), "white");
+  assert.equal(joinRoomState(joinedRoom, "chellun-device"), joinedRoom);
+  assert.equal(joinRoomState(joinedRoom, "third-device"), null);
+});
+
+test("online moves enforce turn, identity, and the existing legal-move rules", () => {
+  const room = joinRoomState(createRoomState("addu-device", 1), "chellun-device", 2);
+  assert.ok(room);
+  assert.equal(playRoomMove(room, 2, 3, "white", "chellun-device"), null);
+  assert.equal(playRoomMove(room, 0, 0, "black", "addu-device"), null);
+
+  const moved = playRoomMove(room, 2, 3, "black", "addu-device", 3);
+  assert.ok(moved);
+  assert.equal(moved.turn, "white");
+  assert.deepEqual(countPieces(decodeBoard(moved.board)), { black: 4, white: 1 });
+  assert.equal(playRoomMove(moved, 2, 3, "black", "addu-device", 4), null);
+
+  const whiteMove = getValidMoves(decodeBoard(moved.board), "white")[0];
+  const replied = playRoomMove(moved, whiteMove.row, whiteMove.col, "white", "chellun-device", 5);
+  assert.ok(replied);
+  assert.equal(replied.turn, "black");
+  assert.equal(replied.revision, 2);
+});
+
+test("a rematch resets the same room for both players", () => {
+  const room = joinRoomState(createRoomState("addu-device", 1), "chellun-device", 2);
+  assert.ok(room);
+  const moved = playRoomMove(room, 2, 3, "black", "addu-device", 3);
+  assert.ok(moved);
+  const reset = resetRoom(moved, "chellun-device", 4);
+  assert.ok(reset);
+  assert.equal(reset.turn, "black");
+  assert.equal(reset.status, "playing");
+  assert.equal(reset.rematches, 1);
+  assert.deepEqual(countPieces(decodeBoard(reset.board)), { black: 2, white: 2 });
 });

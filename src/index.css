@@ -25,7 +25,7 @@ button { font: inherit; }
 .ambient::before, .ambient::after { content: ""; position: absolute; width: 52%; height: 26%; border: 1px solid rgba(97, 47, 61, 0.1); border-radius: 100% 0; transform: rotate(32deg); }
 .ambient-one { top: -230px; right: -170px; }
 .ambient-two { bottom: -300px; left: -210px; transform: rotate(150deg); }
-.brand, .game-layout, footer { position: relative; z-index: 1; width: min(1120px, 100%); margin-inline: auto; }
+.brand, .game-layout, .lobby-card, footer { position: relative; z-index: 1; width: min(1120px, 100%); margin-inline: auto; }
 .brand { display: flex; align-items: center; gap: 15px; margin-bottom: 26px; }
 .brand-mark { position: relative; width: 42px; height: 42px; }
 .brand-mark span { position: absolute; width: 30px; height: 30px; border-radius: 50%; box-shadow: 0 6px 14px rgba(47, 31, 34, 0.18); }
@@ -33,9 +33,52 @@ button { font: inherit; }
 .brand-mark span:last-child { right: 0; bottom: 0; background: var(--paper); border: 1px solid #d9cec2; }
 .eyebrow, .section-label { margin: 0; color: var(--wine); font-size: 0.67rem; font-weight: 750; letter-spacing: 0.19em; text-transform: uppercase; }
 .brand h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 500; line-height: 0.95; letter-spacing: -0.035em; }
+.brand-copy { display: grid; }
+.matchup { margin: 7px 0 0; color: var(--muted); font-family: Georgia, "Times New Roman", serif; font-size: 0.78rem; font-style: italic; letter-spacing: 0.025em; }
+.connection-pill { display: inline-flex; align-items: center; gap: 7px; margin-left: auto; padding: 7px 11px; border: 1px solid rgba(70, 49, 48, 0.11); border-radius: 999px; color: var(--muted); background: rgba(251, 248, 242, 0.72); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.05em; }
+.connection-pill > span { width: 7px; height: 7px; border-radius: 50%; background: #a5968c; }
+.connection-pill.online > span { background: #568369; box-shadow: 0 0 0 3px rgba(86, 131, 105, 0.12); }
+
+.lobby-card { width: min(620px, 100%); margin-top: clamp(42px, 9vh, 105px); padding: clamp(28px, 6vw, 54px); border: 1px solid rgba(70, 49, 48, 0.12); border-radius: 26px; background: rgba(251, 248, 242, 0.82); box-shadow: 0 24px 65px rgba(75, 54, 49, 0.1); text-align: center; backdrop-filter: blur(12px); }
+.lobby-card::before { content: ""; position: absolute; inset: 10px; border: 1px solid rgba(196, 168, 109, 0.17); border-radius: 19px; pointer-events: none; }
+.lobby-card h2 { position: relative; margin: 15px 0 12px; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2rem, 6vw, 3.15rem); font-weight: 500; line-height: 1.05; letter-spacing: -0.035em; }
+.lobby-card > p:not(.section-label) { position: relative; width: min(440px, 100%); margin: 0 auto; color: var(--muted); font-family: Georgia, "Times New Roman", serif; line-height: 1.55; }
+.lobby-pair { position: relative; display: flex; align-items: center; justify-content: center; gap: clamp(14px, 4vw, 27px); margin: 29px 0; }
+.lobby-pair span { display: flex; align-items: center; gap: 9px; font-size: 0.84rem; font-weight: 700; }
+.lobby-pair i { font-style: normal; }
+.lobby-pair b { color: var(--brass); font-family: Georgia, serif; font-size: 0.76rem; font-style: italic; font-weight: 400; }
+.primary-button { position: relative; min-width: 210px; padding: 13px 24px; border: 1px solid var(--wine); border-radius: 999px; color: #fff; background: var(--wine); box-shadow: 0 10px 24px rgba(97, 47, 61, 0.2); font-size: 0.84rem; font-weight: 750; cursor: pointer; transition: 160ms ease; }
+.primary-button:hover:not(:disabled) { background: var(--wine-deep); transform: translateY(-1px); }
+.primary-button:disabled { cursor: wait; opacity: 0.66; }
+.status-card { display: grid; justify-items: center; gap: 4px; }
+.status-card .primary-button { margin-top: 24px; }
+.join-diagnostics { position: relative; width: 100%; margin-top: 20px; padding: 16px; border: 1px solid rgba(70, 49, 48, 0.16); border-radius: 14px; background: rgba(255, 255, 255, 0.58); color: var(--ink); text-align: left; }
+.join-diagnostics > strong, .join-diagnostics > p { display: block; margin: 0 0 10px; font-size: 0.78rem; letter-spacing: 0.04em; }
+.join-diagnostics dl { display: grid; gap: 7px; margin: 0 0 12px; }
+.join-diagnostics dl div { display: grid; grid-template-columns: minmax(130px, 0.8fr) minmax(0, 1.4fr); gap: 10px; }
+.join-diagnostics dt { color: var(--muted); font-size: 0.72rem; }
+.join-diagnostics dd { min-width: 0; margin: 0; overflow-wrap: anywhere; font: 0.72rem/1.35 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.join-diagnostics pre { max-height: 220px; margin: 0; padding: 10px; overflow: auto; border-radius: 8px; background: rgba(70, 49, 48, 0.06); white-space: pre-wrap; overflow-wrap: anywhere; font: 0.68rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.move-diagnostics { margin: 14px 0 0 21px; }
+.loading-rings { position: relative; width: 66px; height: 46px; margin-bottom: 20px; }
+.loading-rings span { position: absolute; width: 42px; height: 42px; border-radius: 50%; animation: waiting-pulse 1.5s ease-in-out infinite alternate; }
+.loading-rings span:first-child { left: 0; background: #292525; }
+.loading-rings span:last-child { right: 0; background: var(--paper); border: 1px solid #d9cec2; animation-delay: -0.75s; }
+.waiting-card { width: min(700px, 100%); }
+.invite-field { position: relative; display: flex; gap: 8px; margin: 29px 0 21px; padding: 6px; border: 1px solid rgba(70, 49, 48, 0.14); border-radius: 14px; background: #fffdfa; }
+.invite-field input { min-width: 0; flex: 1; padding: 8px 10px; border: 0; outline: 0; color: var(--muted); background: transparent; font-size: 0.75rem; }
+.invite-field button { padding: 10px 14px; border: 0; border-radius: 9px; color: #fff; background: var(--wine); font-size: 0.72rem; font-weight: 750; cursor: pointer; white-space: nowrap; }
+.waiting-line { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-family: Georgia, serif; font-size: 0.82rem; font-style: italic; }
+.waiting-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brass); animation: waiting-pulse 1.2s ease-in-out infinite alternate; }
+.text-button { padding: 5px; border: 0; color: var(--muted); background: transparent; font-size: 0.72rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.waiting-card > .text-button { position: relative; margin-top: 22px; }
 
 .game-layout { display: grid; grid-template-columns: minmax(220px, 290px) minmax(0, 650px); justify-content: center; gap: clamp(28px, 6vw, 72px); align-items: center; }
 .game-panel { display: grid; gap: 15px; }
+.room-strip { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 8px; padding: 0 4px; color: var(--muted); font-size: 0.65rem; }
+.room-strip span { text-transform: uppercase; letter-spacing: 0.12em; }
+.room-strip strong { color: var(--wine); letter-spacing: 0.12em; }
+.room-strip em { text-align: right; font-family: Georgia, serif; font-weight: 400; }
 .turn-card, .score-card, .rules-note { border: 1px solid rgba(70, 49, 48, 0.11); border-radius: 18px; background: rgba(251, 248, 242, 0.76); box-shadow: 0 12px 35px rgba(75, 54, 49, 0.06); backdrop-filter: blur(8px); }
 .turn-card { padding: 22px; }
 .turn-line { display: flex; align-items: center; gap: 11px; margin-top: 12px; }
@@ -54,6 +97,7 @@ button { font: inherit; }
 .restart-button { width: 100%; padding: 12px 16px; border: 1px solid rgba(97, 47, 61, 0.28); border-radius: 12px; color: var(--wine); background: transparent; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: 160ms ease; }
 .restart-button:hover { color: #fff; background: var(--wine); transform: translateY(-1px); }
 .restart-button span { margin-right: 6px; font-size: 1.05rem; }
+.panel-actions { display: grid; gap: 7px; }
 
 .board-column { min-width: 0; position: relative; }
 .board-wrap { padding-top: 20px; }
@@ -69,6 +113,8 @@ button { font: inherit; }
 .cell:disabled { opacity: 1; }
 .cell.legal { cursor: pointer; }
 .cell.legal:hover { background: #4d6d5c; }
+.board-waiting .cell.legal { cursor: default; }
+.board-waiting .move-hint { opacity: 0.62; }
 .cell:focus-visible { z-index: 2; outline: 3px solid #f1d394; outline-offset: -4px; }
 .piece { width: 76%; height: 76%; border-radius: 50%; animation: place 230ms cubic-bezier(.2,.8,.3,1); }
 .piece.black { background: radial-gradient(circle at 33% 28%, #65605d 0%, #2b2928 47%, #191818 100%); box-shadow: 0 7px 10px rgba(14, 17, 15, 0.42), inset 0 1px 1px rgba(255,255,255,0.2); }
@@ -85,10 +131,12 @@ button { font: inherit; }
 footer { margin-top: 26px; color: #8c7d78; font-family: Georgia, serif; font-size: 0.75rem; font-style: italic; text-align: center; }
 
 @keyframes place { from { transform: scale(0.4) rotateY(80deg); opacity: 0; } to { transform: scale(1) rotateY(0); opacity: 1; } }
+@keyframes waiting-pulse { from { opacity: 0.45; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
 
 @media (max-width: 800px) {
   .game-shell { padding-top: 22px; }
   .brand { margin-bottom: 15px; }
+  .lobby-card { margin-top: clamp(24px, 6vh, 58px); }
   .game-layout { display: flex; flex-direction: column-reverse; gap: 16px; align-items: stretch; }
   .board-column { width: min(100%, 590px); margin-inline: auto; }
   .game-panel { width: min(100%, 590px); margin-inline: auto; grid-template-columns: 1fr 1fr; }
@@ -104,6 +152,14 @@ footer { margin-top: 26px; color: #8c7d78; font-family: Georgia, serif; font-siz
   .brand-mark span { width: 25px; height: 25px; }
   .brand h1 { font-size: 2rem; }
   .eyebrow { font-size: 0.58rem; }
+  .connection-pill { padding: 6px 8px; font-size: 0.58rem; }
+  .lobby-card { padding: 30px 20px; border-radius: 18px; }
+  .lobby-card::before { inset: 7px; border-radius: 13px; }
+  .lobby-card h2 { font-size: 2rem; }
+  .lobby-pair { gap: 10px; margin: 23px 0; }
+  .lobby-pair span { gap: 5px; font-size: 0.7rem; }
+  .invite-field { display: grid; }
+  .invite-field input { width: 100%; text-align: center; }
   .board-wrap { padding-top: 9px; }
   .board { padding: 7px; border-radius: 14px; }
   .column-labels { margin-left: 17px; padding-inline: 7px; }

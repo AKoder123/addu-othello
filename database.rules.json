@@ -1,0 +1,57 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "rooms": {
+      "$roomCode": {
+        ".read": "auth != null",
+        ".write": "auth != null && newData.exists() && ((!data.exists() && newData.child('players/black/uid').val() === auth.uid && !newData.child('players/white').exists()) || (data.exists() && !data.child('players/white').exists() && newData.child('players/black/uid').val() === data.child('players/black/uid').val() && newData.child('players/white/uid').val() === auth.uid && newData.child('board').val() === data.child('board').val() && newData.child('turn').val() === data.child('turn').val() && data.child('status').val() === 'waiting' && newData.child('status').val() === 'playing') || (data.child('players/white').exists() && data.child('status').val() === 'playing' && auth.uid === data.child('players').child(data.child('turn').val()).child('uid').val() && newData.child('players/black/name').val() === data.child('players/black/name').val() && newData.child('players/black/uid').val() === data.child('players/black/uid').val() && newData.child('players/white/name').val() === data.child('players/white/name').val() && newData.child('players/white/uid').val() === data.child('players/white/uid').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('rematches').val() === data.child('rematches').val() && newData.child('revision').val() === data.child('revision').val() + 1 && newData.child('board').val() !== data.child('board').val() && ((newData.child('status').val() === 'playing' && !newData.child('winner').exists()) || (newData.child('status').val() === 'finished' && newData.child('winner').exists()))) || (data.child('players/white').exists() && data.child('status').val() === 'finished' && (auth.uid === data.child('players/black/uid').val() || auth.uid === data.child('players/white/uid').val()) && newData.child('players/black/name').val() === data.child('players/black/name').val() && newData.child('players/black/uid').val() === data.child('players/black/uid').val() && newData.child('players/white/name').val() === data.child('players/white/name').val() && newData.child('players/white/uid').val() === data.child('players/white/uid').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('board').val() === '---------------------------wb------bw---------------------------' && newData.child('turn').val() === 'black' && newData.child('status').val() === 'playing' && !newData.child('winner').exists() && newData.child('revision').val() === data.child('revision').val() + 1 && newData.child('rematches').val() === data.child('rematches').val() + 1))",
+        ".validate": "newData.hasChildren(['board', 'turn', 'status', 'players', 'notice', 'createdAt', 'updatedAt', 'revision', 'rematches'])",
+        "board": {
+          ".validate": "newData.isString() && newData.val().matches(/^[bw-]{64}$/)"
+        },
+        "turn": {
+          ".validate": "newData.val() === 'black' || newData.val() === 'white'"
+        },
+        "status": {
+          ".validate": "newData.val() === 'waiting' || newData.val() === 'playing' || newData.val() === 'finished'"
+        },
+        "notice": {
+          ".validate": "newData.isString() && newData.val().length <= 140"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber() && (!data.exists() || newData.val() === data.val())"
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "revision": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "rematches": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "winner": {
+          ".validate": "newData.val() === 'black' || newData.val() === 'white' || newData.val() === 'draw'"
+        },
+        "players": {
+          ".validate": "newData.hasChildren(['black'])",
+          "black": {
+            ".validate": "newData.hasChildren(['name', 'uid']) && newData.child('name').val() === 'Addu' && (!data.exists() || newData.child('uid').val() === data.child('uid').val())",
+            "name": { ".validate": "newData.isString()" },
+            "uid": { ".validate": "newData.isString()" },
+            "$other": { ".validate": false }
+          },
+          "white": {
+            ".validate": "newData.hasChildren(['name', 'uid']) && newData.child('name').val() === 'Chellun Kutty' && (!data.exists() || newData.child('uid').val() === data.child('uid').val())",
+            "name": { ".validate": "newData.isString()" },
+            "uid": { ".validate": "newData.isString()" },
+            "$other": { ".validate": false }
+          },
+          "$other": { ".validate": false }
+        },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
