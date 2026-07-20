@@ -354,7 +354,14 @@ export function OthelloGame() {
                         onClick={() => playMove(rowIndex, colIndex)}
                         aria-label={cell ? `${coordinate}, ${playerName(cell)} piece` : move ? `${coordinate}, legal move for ${playerName(room.turn)}, captures ${move.flips.length}` : `${coordinate}, empty`}
                       >
-                        {cell && <span className={`piece ${cell}`} aria-hidden="true" />}
+                        {cell && (
+                          <span className={`piece ${cell}`} aria-hidden="true">
+                            <span className="coin">
+                              <span className="coin-face black" />
+                              <span className="coin-face white" />
+                            </span>
+                          </span>
+                        )}
                         {move && room.status !== "finished" && <span className="move-hint" aria-hidden="true" />}
                       </button>
                     );
