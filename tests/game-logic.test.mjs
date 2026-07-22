@@ -4,11 +4,16 @@ import { applyMove, countPieces, createInitialBoard, getValidMoves } from "../sr
 import {
   createRoomState,
   decodeBoard,
+  isRoomData,
   joinRoomState,
   playRoomMove,
   resetRoom,
   resolveSide,
 } from "../src/multiplayerGame.ts";
+
+test("a new shared room has no last-move indicator", () => {
+  assert.equal(createRoomState("addu-device", 1).lastMove, null);
+});
 
 test("starts with four pieces and four legal moves for black", () => {
   const board = createInitialBoard();
@@ -44,6 +49,7 @@ test("returns no moves when the board is full", () => {
 
 test("assigns the creator to black and the invitee to white", () => {
   const waitingRoom = createRoomState("addu-device", 1);
+  assert.equal(waitingRoom.lastMove, null);
   assert.equal(waitingRoom.status, "waiting");
   assert.equal(resolveSide(waitingRoom, "addu-device"), "black");
 
@@ -63,6 +69,7 @@ test("online moves enforce turn, identity, and the existing legal-move rules", (
 
   const moved = playRoomMove(room, 2, 3, "black", "addu-device", 3);
   assert.ok(moved);
+  assert.deepEqual(moved.lastMove, { row: 2, col: 3 });
   assert.equal(moved.turn, "white");
   assert.deepEqual(countPieces(decodeBoard(moved.board)), { black: 4, white: 1 });
   assert.equal(playRoomMove(moved, 2, 3, "black", "addu-device", 4), null);
@@ -70,8 +77,31 @@ test("online moves enforce turn, identity, and the existing legal-move rules", (
   const whiteMove = getValidMoves(decodeBoard(moved.board), "white")[0];
   const replied = playRoomMove(moved, whiteMove.row, whiteMove.col, "white", "chellun-device", 5);
   assert.ok(replied);
+  assert.deepEqual(replied.lastMove, { row: whiteMove.row, col: whiteMove.col });
   assert.equal(replied.turn, "black");
   assert.equal(replied.revision, 2);
+
+  const synchronizedRoom = structuredClone(replied);
+  assert.equal(isRoomData(synchronizedRoom), true);
+  assert.deepEqual(synchronizedRoom.lastMove, replied.lastMove);
+  assert.deepEqual(decodeBoard(synchronizedRoom.board), decodeBoard(replied.board));
+});
+
+test("an automatic pass leaves the indicator on the move that caused the pass", () => {
+  const baseRoom = joinRoomState(createRoomState("addu-device", 1), "chellun-device", 2);
+  assert.ok(baseRoom);
+  const roomBeforePass = {
+    ...baseRoom,
+    board: "wwwwwb--wwwwb---wbbb------bbb------bbb--------------------------",
+    turn: "white",
+    lastMove: { row: 0, col: 5 },
+  };
+
+  const moved = playRoomMove(roomBeforePass, 0, 6, "white", "chellun-device", 3);
+  assert.ok(moved);
+  assert.equal(moved.turn, "white");
+  assert.match(moved.notice, /turn is passed/);
+  assert.deepEqual(moved.lastMove, { row: 0, col: 6 });
 });
 
 test("a rematch resets the same room for both players", () => {
@@ -84,5 +114,6 @@ test("a rematch resets the same room for both players", () => {
   assert.equal(reset.turn, "black");
   assert.equal(reset.status, "playing");
   assert.equal(reset.rematches, 1);
+  assert.equal(reset.lastMove, null);
   assert.deepEqual(countPieces(decodeBoard(reset.board)), { black: 2, white: 2 });
 });

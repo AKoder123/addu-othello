@@ -343,6 +343,7 @@ export function OthelloGame() {
                 <div className={`board${!isMyTurn ? " board-waiting" : ""}`} role="grid" aria-label="Othello board">
                   {board.map((row, rowIndex) => row.map((cell, colIndex) => {
                     const move = moveMap.get(`${rowIndex}-${colIndex}`);
+                    const isLastMove = room.lastMove?.row === rowIndex && room.lastMove?.col === colIndex;
                     const coordinate = `${COLUMNS[colIndex]}${rowIndex + 1}`;
                     return (
                       <button
@@ -352,7 +353,7 @@ export function OthelloGame() {
                         role="gridcell"
                         disabled={!move || !isMyTurn || !connected || busy}
                         onClick={() => playMove(rowIndex, colIndex)}
-                        aria-label={cell ? `${coordinate}, ${playerName(cell)} piece` : move ? `${coordinate}, legal move for ${playerName(room.turn)}, captures ${move.flips.length}` : `${coordinate}, empty`}
+                        aria-label={cell ? `${coordinate}, ${playerName(cell)} piece${isLastMove ? ", last move" : ""}` : move ? `${coordinate}, legal move for ${playerName(room.turn)}, captures ${move.flips.length}` : `${coordinate}, empty`}
                       >
                         {cell && (
                           <span className={`piece ${cell}`} aria-hidden="true">
@@ -360,6 +361,7 @@ export function OthelloGame() {
                               <span className="coin-face black" />
                               <span className="coin-face white" />
                             </span>
+                            {isLastMove && <span className="last-move-marker" />}
                           </span>
                         )}
                         {move && room.status !== "finished" && <span className="move-hint" aria-hidden="true" />}
