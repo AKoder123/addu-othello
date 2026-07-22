@@ -6,6 +6,7 @@ import {
   isRoomData,
   joinRoomState,
   playRoomMove,
+  reclaimSeat,
   resetRoom,
   resolveSide,
   type RoomData,
@@ -126,6 +127,7 @@ export async function createOnlineRoom(uid: string) {
 async function performGuestJoin(
   roomCode: string,
   uid: string,
+  preferredSide?: Player,
   onDiagnostics?: (diagnostics: JoinDiagnostics) => void,
 ): Promise<Player> {
   const code = normaliseRoomCode(roomCode);
@@ -192,6 +194,46 @@ async function performGuestJoin(
       updateDiagnostics({ transactionCommitted: false });
       return existingSide;
     }
+
+    // The player holds no seat under this uid. That happens the first time a
+    // guest joins, but also when a returning player's anonymous session was
+    // cleared (e.g. Safari Private Browsing) and Firebase issued them a fresh
+    // uid. In the latter case we reclaim the seat they previously held rather
+    // than rejecting them as a stranger. A saved side (from localStorage) is
+    // authoritative; without one, an occupied white seat is treated as a
+    // returning guest reclaiming white.
+    const reclaimTarget: Player | null =
+      preferredSide && snapshotValue.players[preferredSide]
+        ? preferredSide
+        : !preferredSide && snapshotValue.players.white
+          ? "white"
+          : null;
+
+    if (reclaimTarget) {
+      let reclaimCallbacks = 0;
+      const reclaimResult = await runTransaction(
+        roomReference(code),
+        (current) => {
+          reclaimCallbacks += 1;
+          const currentRoom = isRoomData(current)
+            ? current
+            : current === null && reclaimCallbacks === 1
+              ? snapshotValue
+              : null;
+          if (!currentRoom) return undefined;
+          if (resolveSide(currentRoom, uid) === reclaimTarget) return currentRoom;
+          return reclaimSeat(currentRoom, uid, reclaimTarget) ?? undefined;
+        },
+        { applyLocally: false },
+      );
+      const reclaimed = reclaimResult.snapshot.val();
+      updateDiagnostics({ transactionCommitted: reclaimResult.committed, transactionSnapshotValue: reclaimed });
+      if (isRoomData(reclaimed) && resolveSide(reclaimed, uid) === reclaimTarget) return reclaimTarget;
+      const message = "This room already has a different white player.";
+      updateDiagnostics({ firebaseErrorCode: "reclaim-failed", firebaseErrorMessage: message });
+      throw new RoomError("full", message, diagnostics);
+    }
+
     if (snapshotValue.players.white) {
       const message = "This room already has a different white player.";
       updateDiagnostics({ firebaseErrorCode: "room-full", firebaseErrorMessage: message });
@@ -255,6 +297,7 @@ async function performGuestJoin(
 export function joinOnlineRoom(
   roomCode: string,
   uid: string,
+  preferredSide?: Player,
   onDiagnostics?: (diagnostics: JoinDiagnostics) => void,
 ): Promise<Player> {
   const code = normaliseRoomCode(roomCode);
@@ -262,7 +305,7 @@ export function joinOnlineRoom(
   const existingAttempt = guestJoinsInFlight.get(attemptKey);
   if (existingAttempt) return existingAttempt;
 
-  const attempt = performGuestJoin(code, uid, onDiagnostics).finally(() => {
+  const attempt = performGuestJoin(code, uid, preferredSide, onDiagnostics).finally(() => {
     guestJoinsInFlight.delete(attemptKey);
   });
   guestJoinsInFlight.set(attemptKey, attempt);

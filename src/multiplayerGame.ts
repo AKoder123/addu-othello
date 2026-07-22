@@ -78,6 +78,20 @@ export function joinRoomState(room: RoomData, uid: string, now = Date.now()): Ro
   };
 }
 
+export function reclaimSeat(room: RoomData, uid: string, side: Player, now = Date.now()): RoomData | null {
+  const seat = room.players[side];
+  if (!seat) return null;
+  if (seat.uid === uid) return room;
+  return {
+    ...room,
+    players: {
+      ...room.players,
+      [side]: { ...seat, uid },
+    },
+    updatedAt: now,
+  };
+}
+
 export function playRoomMove(
   room: RoomData,
   row: number,

@@ -28,6 +28,18 @@ function saveIdentity(roomCode: string, uid: string, side: Player) {
   localStorage.setItem(identityKey(roomCode), JSON.stringify({ uid, side }));
 }
 
+function loadIdentity(roomCode: string): { uid: string; side: Player } | null {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(identityKey(roomCode)) ?? "null");
+    if (parsed && typeof parsed.uid === "string" && (parsed.side === "black" || parsed.side === "white")) {
+      return { uid: parsed.uid, side: parsed.side };
+    }
+  } catch {
+    // Ignore malformed identity data and fall back to a fresh join.
+  }
+  return null;
+}
+
 function friendlyError(error: unknown) {
   if (error instanceof RoomError || error instanceof MoveError) return error.message;
   return "Firebase could not be reached. Please check the setup and try again.";
@@ -95,7 +107,7 @@ export function OthelloGame() {
         uid: playerUid,
         roomCode: code,
       });
-      const playerSide = await joinOnlineRoom(code, playerUid, setJoinDiagnostics);
+      const playerSide = await joinOnlineRoom(code, playerUid, loadIdentity(code)?.side, setJoinDiagnostics);
       saveIdentity(code, playerUid, playerSide);
       setUid(playerUid);
       setSide(playerSide);

@@ -6,6 +6,7 @@ import {
   decodeBoard,
   joinRoomState,
   playRoomMove,
+  reclaimSeat,
   resetRoom,
   resolveSide,
 } from "../src/multiplayerGame.ts";
@@ -85,4 +86,31 @@ test("a rematch resets the same room for both players", () => {
   assert.equal(reset.status, "playing");
   assert.equal(reset.rematches, 1);
   assert.deepEqual(countPieces(decodeBoard(reset.board)), { black: 2, white: 2 });
+});
+
+test("reclaimSeat rebinds a seat to a returning player's new uid", () => {
+  const created = createRoomState("black-1", 1);
+  const joined = joinRoomState(created, "white-1", 2);
+  // White returns with a fresh anonymous uid after losing their session.
+  const reclaimed = reclaimSeat(joined, "white-2", "white", 3);
+  assert.ok(reclaimed);
+  assert.equal(resolveSide(reclaimed, "white-2"), "white");
+  assert.equal(reclaimed.players.white.name, "Chellun Kutty");
+  // Nothing else about the in-progress game changes.
+  assert.equal(reclaimed.board, joined.board);
+  assert.equal(reclaimed.turn, joined.turn);
+  assert.equal(reclaimed.status, joined.status);
+  assert.equal(reclaimed.revision, joined.revision);
+  assert.equal(reclaimed.rematches, joined.rematches);
+  assert.equal(reclaimed.players.black.uid, "black-1");
+});
+
+test("reclaimSeat is a no-op when the uid already holds the seat", () => {
+  const room = joinRoomState(createRoomState("black-1", 1), "white-1", 2);
+  assert.equal(reclaimSeat(room, "white-1", "white", 3), room);
+});
+
+test("reclaimSeat returns null for an unoccupied seat", () => {
+  const waiting = createRoomState("black-1", 1);
+  assert.equal(reclaimSeat(waiting, "white-1", "white", 2), null);
 });
