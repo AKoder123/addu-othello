@@ -34,6 +34,16 @@
         "winner": {
           ".validate": "newData.val() === 'black' || newData.val() === 'white' || newData.val() === 'draw'"
         },
+        "lastMove": {
+          ".validate": "newData.hasChildren(['row', 'col'])",
+          "row": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 8 && newData.val() % 1 === 0"
+          },
+          "col": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 8 && newData.val() % 1 === 0"
+          },
+          "$other": { ".validate": false }
+        },
         "players": {
           ".validate": "newData.hasChildren(['black'])",
           "black": {

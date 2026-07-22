@@ -10,6 +10,7 @@ import {
 
 export type RoomStatus = "waiting" | "playing" | "finished";
 export type Winner = Player | "draw";
+export type LastMove = { row: number; col: number };
 
 export type RoomData = {
   board: string;
@@ -25,6 +26,7 @@ export type RoomData = {
   updatedAt: number;
   revision: number;
   rematches: number;
+  lastMove?: LastMove | null;
 };
 
 export const playerName = (player: Player) => player === "black" ? "Addu" : "Chellun Kutty";
@@ -54,6 +56,7 @@ export function createRoomState(uid: string, now = Date.now()): RoomData {
     updatedAt: now,
     revision: 0,
     rematches: 0,
+    lastMove: null,
   };
 }
 
@@ -124,6 +127,7 @@ export function playRoomMove(
     status,
     notice,
     ...(winner ? { winner } : {}),
+    lastMove: { row, col },
     updatedAt: now,
     revision: room.revision + 1,
   };
@@ -138,6 +142,7 @@ export function resetRoom(room: RoomData, uid: string, now = Date.now()): RoomDa
     turn: "black",
     status: "playing",
     notice: "Addu makes the first move.",
+    lastMove: null,
     updatedAt: now,
     revision: room.revision + 1,
     rematches: room.rematches + 1,
@@ -147,6 +152,16 @@ export function resetRoom(room: RoomData, uid: string, now = Date.now()): RoomDa
 export function isRoomData(value: unknown): value is RoomData {
   if (!value || typeof value !== "object") return false;
   const room = value as Partial<RoomData>;
+  const lastMove = room.lastMove;
+  const hasValidLastMove = lastMove == null || (
+    typeof lastMove === "object"
+    && Number.isInteger(lastMove.row)
+    && Number.isInteger(lastMove.col)
+    && lastMove.row >= 0
+    && lastMove.row < 8
+    && lastMove.col >= 0
+    && lastMove.col < 8
+  );
   return typeof room.board === "string" && /^[bw-]{64}$/.test(room.board)
     && (room.turn === "black" || room.turn === "white")
     && (room.status === "waiting" || room.status === "playing" || room.status === "finished")
@@ -155,5 +170,6 @@ export function isRoomData(value: unknown): value is RoomData {
     && typeof room.createdAt === "number"
     && typeof room.updatedAt === "number"
     && typeof room.revision === "number"
-    && typeof room.rematches === "number";
+    && typeof room.rematches === "number"
+    && hasValidLastMove;
 }
